@@ -1,0 +1,25 @@
+[package]
+name = "lnesstask"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = []
+curve-ed25519 = ["generic-ec/curve-ed25519"]
+curve-secp256k1 = ["generic-ec/curve-secp256k1"]
+curve-secp256r1 = ["generic-ec/curve-secp256r1"]
+curve-secp384r1 = ["generic-ec/curve-secp384r1"]
+ 
+[dependencies]
+generic-ec = { version = "0.5.0", default-features = false, features = ["serde"] }
+sha2 = { version = "0.10", default-features = false }
+rand_core = "0.6"
+
+[dev-dependencies]
+generic-ec = { version = "0.5.0", default-features = false, features = [
+    "curve-ed25519",
+    "curve-secp256k1",
+    "curve-secp384r1",
+] }
+hex = "0.4"
+rand = "0.8"
