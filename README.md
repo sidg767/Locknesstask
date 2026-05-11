@@ -1,6 +1,6 @@
-# lnesstask
+# locknesstask
 
-`lnesstask` is a small Rust crate offering a no_std-compatible sample ECIES-style encryption implementation over generic elliptic curves.
+`locknesstask` is a small Rust crate offering a no_std-compatible sample ECIES-style encryption implementation over generic elliptic curves.
 
 ## Highlights
 
