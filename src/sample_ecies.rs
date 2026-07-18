@@ -9,11 +9,11 @@
 //! Encrypt(pk, M):
 //!   eph <- Zq
 //!   R   = G * eph
-//!   K   = Expand(H(encode(pk * eph)), len(M))
+//!   K   = Expand(H(encode(eph * pk)), len(M))
 //!   return encode(R) || (M XOR K)
 
 //! To decrypt, receiver takes the first part of the ciphertext(ct) to get R,
-//! Then he computes the shared secret S = R * sk = G * eph * sk, which is the same as the sender's shared secret.
+//! Then he computes the shared secret S = sk * R = G * eph * sk, which is the same as the sender's shared secret.
 //! Then the receiver can encode(S), hash it and expand it to get K.
 //! Now to get the msg M, as XOR is self-inverse, the receiver XORs K with the second part of the ciphertext to get M.
 //! Decrypt(sk, ct):
@@ -38,7 +38,7 @@ pub fn encrypt<E: Curve>(
     let eph = SecretScalar::<E>::random(rng);
     // I used to_bytes to serialize the points to compressed bytes, so that it can be used as input for the hash function
     let r: EncodedPoint<E> = (Point::generator() * &eph).to_bytes(true);
-    let shared_secret: EncodedPoint<E> = (pk * &eph).to_bytes(true);
+    let shared_secret: EncodedPoint<E> = (&eph * pk).to_bytes(true);
     // as_ref() gives a byte slice without copying, using h gives type mismatch, so used &h as &[u8;32] needed
     let key = expand(&h(shared_secret.as_ref()), plaintxt.len());
     // with_capacity() is an optimization to avoid multiple reallocations as we know the final size
@@ -62,7 +62,7 @@ pub fn decrypt<E: Curve>(sk: &Scalar<E>, ciphertxt: &[u8]) -> Result<Vec<u8>, Er
     // from_bytes returns error if bytes don't represent a point on the curve
     let r = Point::<E>::from_bytes(r_bytes).map_err(|_| Error::WrongPoint)?;
 
-    let shared_secret: EncodedPoint<E> = (r * sk).to_bytes(true);
+    let shared_secret: EncodedPoint<E> = (sk * r).to_bytes(true);
     let key = expand(&h(shared_secret.as_ref()), ct.len());
     let mut plaintxt = ct.to_vec();
     xor(&mut plaintxt, &key);
